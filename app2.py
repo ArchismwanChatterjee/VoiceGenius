@@ -1,6 +1,5 @@
 import streamlit as st
 from PIL import Image
-import IPython.display as ipd
 
 def main():        
         st.title("SightSync Harmony")
