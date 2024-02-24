@@ -4,4 +4,4 @@ ipython
 gtts
 google.generativeai
 SpeechRecognition
-Pyaudio
+PyAudio
