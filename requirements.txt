@@ -3,3 +3,4 @@ pillow
 ipython
 gtts
 google.generativeai
+speech_recognition
