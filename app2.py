@@ -1,23 +1,70 @@
 import streamlit as st
-from PIL import Image
+import speech_recognition as sr
+from gtts import gTTS
+import google.generativeai as genai
+import IPython.display as ipd
 
-def main():        
-        st.title("SightSync Harmony")
-        disclaimer_message = """This is an object detector model so preferably use images containing different objects, tools... for best results 🙂."""
 
-        st.write("")
-        with st.expander("Disclaimer ⚠️", expanded=False):
-            st.markdown(disclaimer_message)
+genai.configure(api_key="AIzaSyAbVgMWasN83pawqw02-iQHcEJqPQkDl2Y")
 
-        uploaded_image = st.file_uploader("Choose an image ...", type=["jpg", "jpeg", "png"])
+# Set up the model
+generation_config = {
+  "temperature": 0.9,
+  "top_p": 1,
+  "top_k": 1,
+  "max_output_tokens": 2048,
+}
 
-        if uploaded_image is not None:
-            st.image(uploaded_image, caption="Uploaded Image.", use_column_width=True)
+model = genai.GenerativeModel(model_name="gemini-pro",
+                              generation_config=generation_config)
 
-            image = Image.open(uploaded_image)
-            width, height = image.size
-            st.write("Image Dimensions:", f"{width}x{height}")
+
+def recognize_speech():
+    recognizer = sr.Recognizer()
+
+    with sr.Microphone() as source:
+        st.write("Please speak to ask questions ...")
+        audio = recognizer.listen(source, timeout=10)
+    try:
+        text = recognizer.recognize_google(audio)
+        st.write("You said: {}".format(text))
+        return text.lower()
+    except sr.UnknownValueError:
+        st.error("Sorry, could not understand audio.")
+        return None
+    except sr.RequestError as e:
+        st.error("Could not request results from Google Speech Recognition service; {0}".format(e))
+        return None
+    
+
+
+def detect(text):
+    prompt_parts = [
+    f'''Answer: {text}''',]
+    response = model.generate_content(prompt_parts)
+    tts = gTTS(text=response.text, lang='en')
+    st.write(response.text)
+    tts.save("output.mp3")
+    audio_player = ipd.Audio("output.mp3", autoplay=True)
+    st.write(audio_player)
+
+
+
+def perform_action(command):
+    
+    if "what is" in command:
+        detect(command)
+    else:
+        st.warning("Sorry, I didn't understand that command.")
 
 if __name__ == "__main__":
-    main()
-    
+    st.title("Voice-enabled Streamlit App")
+
+    user_command = recognize_speech()
+
+    if user_command:
+        perform_action(user_command)
+
+
+
+# voice based chatbot or gpt model it will work cooolll
