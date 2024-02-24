@@ -1,2 +1,5 @@
 streamlit
 pillow
+ipython
+gtts
+google.generativeai
