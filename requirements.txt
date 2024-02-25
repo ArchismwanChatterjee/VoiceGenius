@@ -3,3 +3,4 @@ ipython
 gtts
 google.generativeai
 SpeechRecognition
+mutagen
