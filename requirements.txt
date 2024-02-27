@@ -1,7 +1,6 @@
 streamlit
 ipython
 gtts
-openai
+google.generativeai
 SpeechRecognition
 mutagen
-pyaudio
