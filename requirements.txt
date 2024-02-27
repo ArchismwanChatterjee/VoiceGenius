@@ -4,4 +4,4 @@ gtts
 openai
 SpeechRecognition
 mutagen
-PyAudio
+pyaudio
