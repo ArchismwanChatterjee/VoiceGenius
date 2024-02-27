@@ -1,15 +1,34 @@
 import streamlit as st
+
 import speech_recognition as sr
 from gtts import gTTS
+import google.generativeai as genai
+
 import IPython.display as ipd
 import time
+
 from mutagen.mp3 import MP3
 import os
-import openai 
 # from pydub import AudioSegment
 
 
+from dotenv import load_dotenv
 
+load_dotenv()
+
+genai.configure(api_key=os.getenv("MY_SECRET_KEY")) 
+
+# Set up the model
+
+generation_config = {
+    "temperature": 0.9,
+    "top_p": 1,
+    "top_k": 1,
+    "max_output_tokens": 2048,
+}
+
+model = genai.GenerativeModel(model_name="gemini-pro",
+                              generation_config=generation_config)
 
 def recognize_speech():
     recognizer = sr.Recognizer()
@@ -35,27 +54,21 @@ def recognize_speech():
 
 def detect(text):
     prompt_parts = [f'''Answer: {text}''', ]
-    
-    response = openai.Completion.create(
-    engine="gpt-3.5-turbo-instruct",
-    prompt=prompt_parts,
-    max_tokens=500,  # Adjust the max tokens as needed
-    api_key="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"
-    )
+    response = model.generate_content(prompt_parts)
 
-    tts = gTTS(text=response.choices[0].text, lang='en')
+    tts = gTTS(text=response.text, lang='en')
     tts.save("output.mp3")
 
     audio = MP3("output.mp3")
     audio_duration = audio.info.length
-    with st.chat_message("assistant"):
-        st.write("Bot: {}".format(response.choices[0].text))
 
+    with st.chat_message("assistant"):
+        st.write("Bot: {}".format(response.text))
         audio_player = ipd.Audio("output.mp3", autoplay=True)
         st.write(audio_player)
         time.sleep(audio_duration)
 
-        return response.choices[0].text, audio_duration
+        return response.text, audio_duration
 
 def perform_action(command):
     if any(word in command for word in ["what", "how", "why", "where", "when", "who", "which"]):
@@ -105,8 +118,8 @@ if __name__ == "__main__":
             for entry in conversation:
                 file.write(entry)
                 file.write("\n")
-        conversation = []  # Clear the conversation list for the next iteration
-
+        
+        conversation = []  
         time.sleep(2)
 
         if c == 5:
